@@ -1,38 +1,73 @@
-import { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import LandingScene from './components/LandingScene';
-import EnvelopeScene from './components/EnvelopeScene';
-import GalleryScene from './components/GalleryScene';
-import LockScene from './components/LockScene';
-import RevealScene from './components/RevealScene';
+import { useState, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Preload, BakeShadows } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import SceneManager from './components/three/SceneManager';
+import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 
-function App() {
-  const [scene, setScene] = useState('landing');
-  const [isUnlocked, setIsUnlocked] = useState(false);
+export default function App() {
+  const [currentScene, setCurrentScene] = useState(1); // 1 to 7
+  const [audioPlayed, setAudioPlayed] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
 
-  // Auto-unlock check based on time if needed
-  useEffect(() => {
-    const checkTime = () => {
-      const now = new Date();
-      // Only unlock if time is past 12:00 AM of the target date.
-      // Assuming today or a specific date. We'll just use the time if it's past midnight.
-      // For this demo, we'll let the lock screen handle the password "1200".
-    };
-    const timer = setInterval(checkTime, 60000);
-    return () => clearInterval(timer);
-  }, []);
+  // Play audio on first interaction
+  const handleUserInteraction = () => {
+    if (!audioPlayed) {
+      const audio = document.getElementById('bg-music');
+      if (audio) {
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log('Audio error:', e));
+        setAudioPlayed(true);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    const audio = document.getElementById('bg-music');
+    if (audio) {
+      audio.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
-    <div className="w-full h-screen overflow-hidden bg-[#0f0c29] text-white">
-      <AnimatePresence mode="wait">
-        {scene === 'landing' && <LandingScene key="landing" onNext={() => setScene('envelope')} />}
-        {scene === 'envelope' && <EnvelopeScene key="envelope" onNext={() => setScene('gallery')} />}
-        {scene === 'gallery' && <GalleryScene key="gallery" onNext={() => setScene('lock')} />}
-        {scene === 'lock' && <LockScene key="lock" onUnlock={() => setScene('reveal')} />}
-        {scene === 'reveal' && <RevealScene key="reveal" />}
-      </AnimatePresence>
+    <div 
+      className="w-full h-screen bg-black overflow-hidden relative cursor-crosshair"
+      onClick={handleUserInteraction}
+    >
+      <audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2022/05/16/audio_017b2b0a1a.mp3?filename=soft-romantic-piano-113088.mp3" loop />
+      
+      {/* HUD overlays */}
+      <div className="absolute top-6 right-6 z-50">
+        <button onClick={toggleMute} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors border border-white/10 backdrop-blur-md">
+          {isMuted ? <FaVolumeMute size={16} /> : <FaVolumeUp size={16} />}
+        </button>
+      </div>
+
+      <Canvas
+        camera={{ position: [0, 0, 10], fov: 45 }}
+        gl={{ antialias: false, powerPreference: "high-performance" }}
+        dpr={[1, 2]}
+      >
+        <color attach="background" args={['#050510']} />
+        
+        {/* Global Lighting */}
+        <ambientLight intensity={0.2} />
+        
+        <Suspense fallback={null}>
+          <SceneManager currentScene={currentScene} setCurrentScene={setCurrentScene} />
+          <Preload all />
+          <BakeShadows />
+        </Suspense>
+
+        {/* Post Processing for glowing magical effects */}
+        <EffectComposer disableNormalPass>
+          <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
+        </EffectComposer>
+      </Canvas>
+      
+      {/* 2D Overlay UI elements will be rendered by SceneManager via React portals or Html from drei if needed, 
+          but we can also keep simple overlay text here based on currentScene */}
     </div>
   );
 }
-
-export default App;

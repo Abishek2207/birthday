@@ -31,7 +31,7 @@ export default function App() {
 
   return (
     <div 
-      className="w-full h-screen bg-[#050510] overflow-hidden relative cursor-crosshair"
+      className="w-full h-screen h-dvh bg-[#050510] overflow-hidden relative cursor-crosshair"
       onClick={handleUserInteraction}
     >
       <audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2022/05/16/audio_017b2b0a1a.mp3?filename=soft-romantic-piano-113088.mp3" loop />

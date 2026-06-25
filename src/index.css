@@ -6,6 +6,14 @@
   --font-serif: "Playfair Display", serif;
 }
 
+:root {
+  --color-soft-pink: #FFB6C1;
+  --color-lavender: #E6E6FA;
+  --color-purple: #9370DB;
+  --color-rose-gold: #B76E79;
+  --color-moonlight-white: #F4F6F0;
+}
+
 @layer utilities {
   .glassmorphism {
     @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)];
@@ -15,10 +23,31 @@
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
-  background: #0f0c29;
-  background: -webkit-linear-gradient(to right, #24243e, #302b63, #0f0c29);
-  background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
-  color: white;
+  overflow: hidden;
+  background-color: #050510;
+  color: var(--color-moonlight-white);
   font-family: "Inter", sans-serif;
+}
+
+/* Custom UI Layers */
+.ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.interactive {
+  pointer-events: auto;
+}
+
+.handwriting {
+  font-family: "Great Vibes", cursive;
 }

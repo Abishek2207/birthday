@@ -137,11 +137,11 @@ function RevealText() {
 
   useEffect(() => {
     const t0 = setTimeout(() => setStep(1), 1000); // "There was one thing I never found the courage to say..."
-    const t1 = setTimeout(() => setStep(2), 6000); // I
-    const t2 = setTimeout(() => setStep(3), 8500); // Lo
-    const t3 = setTimeout(() => setStep(4), 10000); // Love
-    const t4 = setTimeout(() => setStep(5), 11500); // I Love
-    const t5 = setTimeout(() => setStep(6), 13000); // I Love You ❤️
+    const t1 = setTimeout(() => setStep(2), 6000); // Y
+    const t2 = setTimeout(() => setStep(3), 8500); // You
+    const t3 = setTimeout(() => setStep(4), 10000); // You Are
+    const t4 = setTimeout(() => setStep(5), 11500); // You Are So
+    const t5 = setTimeout(() => setStep(6), 13000); // You Are So Special ❤️
     
     return () => {
       clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5);
@@ -173,10 +173,10 @@ function RevealText() {
             transition={{ duration: 1 }}
             className="text-6xl md:text-8xl font-serif text-[#F4F6F0] drop-shadow-[0_0_20px_rgba(207,181,59,0.5)]"
           >
-            {step === 2 && "I"}
-            {step === 3 && "Lo"}
-            {step === 4 && "Love"}
-            {step === 5 && "I Love"}
+            {step === 2 && "Y"}
+            {step === 3 && "You"}
+            {step === 4 && "You Are"}
+            {step === 5 && "You Are So"}
           </motion.div>
         )}
 
@@ -188,7 +188,7 @@ function RevealText() {
             transition={{ duration: 2.5 }}
             className="text-7xl md:text-9xl font-serif text-[#CFB53B] drop-shadow-[0_0_40px_rgba(207,181,59,0.8)]"
           >
-            I Love You ❤️
+            You Are So Special ❤️
           </motion.div>
         )}
       </AnimatePresence>

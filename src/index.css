@@ -3,6 +3,7 @@
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
   --font-handwriting: "Great Vibes", cursive;
+  --font-serif: "Playfair Display", serif;
 }
 
 @layer utilities {

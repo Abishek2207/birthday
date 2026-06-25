@@ -2,25 +2,87 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 
+/* ─── helpers ─────────────────────────────────────────── */
+function hexToRgb(hex) {
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? `${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}` : '255,255,255';
+}
+
+function GlowBtn({ color = '#ffffff', children, onClick, style = {} }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        padding: '14px 40px',
+        borderRadius: '40px',
+        background: hover
+          ? `rgba(${hexToRgb(color)}, 0.28)`
+          : `rgba(${hexToRgb(color)}, 0.12)`,
+        border: `1.5px solid ${color}`,
+        color: '#fff',
+        cursor: 'pointer',
+        backdropFilter: 'blur(12px)',
+        fontSize: 'clamp(0.95rem, 3vw, 1.1rem)',
+        letterSpacing: '0.07em',
+        fontFamily: "'Playfair Display', serif",
+        boxShadow: `0 0 ${hover ? 35 : 20}px rgba(${hexToRgb(color)}, 0.4)`,
+        transition: 'all 0.3s ease',
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ─── main OverlayUI ──────────────────────────────────── */
 export default function OverlayUI() {
-  const { 
-    currentScene, 
-    isCountdownFinished, 
-    letterOpened,
-    setCurrentScene
+  const {
+    currentScene, isCountdownFinished,
+    letterOpened, revealStarted,
+    candlesBlown, setCandlesBlown,
+    teddyWished, setTeddyWished,
+    houseEntered, setHouseEntered,
+    setCurrentScene,
   } = useStore();
+
+  // Per-scene "ready" delay so buttons appear after the 3D animation settles
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(false);
+    const delays = { 2: 2800, 3: 3200, 4: 3000, 5: 3500 };
+    const t = setTimeout(() => setReady(true), delays[currentScene] ?? 0);
+    return () => clearTimeout(t);
+  }, [currentScene]);
+
+  const handleBlowCandles = () => {
+    setCandlesBlown(true);
+    setTimeout(() => setCurrentScene(3), 3000);
+  };
+  const handleTeddyNext = () => {
+    setTeddyWished(true);
+    setTimeout(() => setCurrentScene(4), 1500);
+  };
+  const handleWalkForward = () => {
+    setReady(false);
+    setTimeout(() => setCurrentScene(5), 600);
+  };
+  const handleEnterHouse = () => {
+    setHouseEntered(true);
+    setTimeout(() => setCurrentScene(6), 3300);
+  };
 
   return (
     <div className="ui-layer">
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
 
-        {/* SCENE 1: Romantic Night (Lock Screen) */}
+        {/* ── SCENE 1: Lock Screen ─────────────────────────── */}
         {currentScene === 1 && (
-          <motion.div 
-            key="scene1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <motion.div key="s1"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 1.5 }}
             className="flex flex-col items-center justify-center h-full w-full pointer-events-none px-4"
           >
@@ -41,22 +103,160 @@ export default function OverlayUI() {
           </motion.div>
         )}
 
-        {/* SCENE 2: Luxury Letter */}
+        {/* ── SCENE 2: Cake ────────────────────────────────── */}
         {currentScene === 2 && (
-          <motion.div 
-            key="scene2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <motion.div key="s2"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 flex flex-col items-center pointer-events-none"
+          >
+            <AnimatePresence>
+              {ready && !candlesBlown && (
+                <motion.div key="cake-ui"
+                  initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="pointer-events-auto flex flex-col items-center gap-5"
+                  style={{ marginTop: '8vh' }}
+                >
+                  <h2 style={{
+                    fontFamily: "'Great Vibes', cursive",
+                    fontSize: 'clamp(2.8rem, 9vw, 4.5rem)',
+                    color: '#fff',
+                    textShadow: '0 0 30px #ff69b4, 0 0 60px #ff1493',
+                    margin: 0, textAlign: 'center',
+                  }}>
+                    Make a Wish! 🎂
+                  </h2>
+                  <GlowBtn color="#ff69b4" onClick={handleBlowCandles}>
+                    💨 Blow the Candles
+                  </GlowBtn>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* ── SCENE 3: Teddy ───────────────────────────────── */}
+        {currentScene === 3 && (
+          <motion.div key="s3"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 flex flex-col items-center pointer-events-none"
+          >
+            <AnimatePresence>
+              {ready && !teddyWished && (
+                <motion.div key="teddy-ui"
+                  initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="pointer-events-auto flex flex-col items-center gap-4"
+                  style={{ marginTop: '7vh' }}
+                >
+                  <h2 style={{
+                    fontFamily: "'Great Vibes', cursive",
+                    fontSize: 'clamp(2.8rem, 9vw, 4.5rem)',
+                    color: '#fff',
+                    textShadow: '0 0 30px #ffb6c1, 0 0 60px #ff69b4',
+                    margin: 0, textAlign: 'center',
+                  }}>
+                    Happy Birthday! 🐻
+                  </h2>
+                  <p style={{
+                    fontFamily: "'Playfair Display', serif",
+                    color: 'rgba(255,255,255,0.75)',
+                    fontSize: 'clamp(0.9rem,3vw,1.1rem)',
+                    fontStyle: 'italic', margin: 0,
+                  }}>
+                    Someone very special is wishing you well...
+                  </p>
+                  <GlowBtn color="#ffb6c1" onClick={handleTeddyNext}>
+                    Let's go forward ➡️
+                  </GlowBtn>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* ── SCENE 4: Road ────────────────────────────────── */}
+        {currentScene === 4 && (
+          <motion.div key="s4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 flex flex-col items-center pointer-events-none"
+          >
+            <AnimatePresence>
+              {ready && (
+                <motion.div key="road-ui"
+                  initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="pointer-events-auto flex flex-col items-center gap-5"
+                  style={{ marginTop: '8vh' }}
+                >
+                  <h2 style={{
+                    fontFamily: "'Playfair Display', serif",
+                    fontSize: 'clamp(1.8rem, 6vw, 3rem)',
+                    color: '#fff',
+                    textShadow: '0 0 30px #ff1493, 0 0 60px #bf00ff',
+                    fontStyle: 'italic', margin: 0, textAlign: 'center',
+                    maxWidth: '80vw',
+                  }}>
+                    A new path opens up...
+                  </h2>
+                  <GlowBtn color="#ff1493" onClick={handleWalkForward}>
+                    🚶 Walk Forward
+                  </GlowBtn>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* ── SCENE 5: House ───────────────────────────────── */}
+        {currentScene === 5 && (
+          <motion.div key="s5"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 flex flex-col items-end justify-center pointer-events-none"
+            style={{ paddingBottom: '8vh', alignItems: 'center', justifyContent: 'flex-end' }}
+          >
+            <AnimatePresence>
+              {ready && !houseEntered && (
+                <motion.div key="house-ui"
+                  initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="pointer-events-auto flex flex-col items-center gap-5 mb-16 sm:mb-24"
+                >
+                  <h2 style={{
+                    fontFamily: "'Great Vibes', cursive",
+                    fontSize: 'clamp(2.5rem, 8vw, 4rem)',
+                    color: '#fff',
+                    textShadow: '0 0 30px rgba(255,215,0,0.9), 0 0 60px rgba(255,165,0,0.5)',
+                    margin: 0, textAlign: 'center',
+                  }}>
+                    Welcome Home 🏠
+                  </h2>
+                  <GlowBtn color="#ffd700" onClick={handleEnterHouse}>
+                    🚪 Enter
+                  </GlowBtn>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* ── SCENE 6: Letter & Final Reveal ───────────────── */}
+        {currentScene === 6 && (
+          <motion.div key="s6"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 1.2 }}
-            className={`flex flex-col items-center justify-center h-full w-full ${!letterOpened ? 'pointer-events-none' : 'interactive'}`}
+            className={`flex flex-col items-center justify-center h-full w-full ${!letterOpened && !revealStarted ? 'pointer-events-none' : 'interactive'}`}
           >
             {!letterOpened ? (
               <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 1 }}
-                className="flex flex-col items-center gap-3 absolute bottom-16 sm:bottom-24 px-4 text-center"
+                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 1 }}
+                className="flex flex-col items-center gap-3 absolute bottom-16 sm:bottom-24 px-4 text-center pointer-events-auto cursor-pointer"
+                onClick={() => useStore.getState().setLetterOpened(true)}
               >
                 <span className="text-4xl animate-bounce">✉️</span>
                 <p className="font-serif italic text-white/80 text-lg sm:text-xl"
@@ -64,20 +264,12 @@ export default function OverlayUI() {
                   Tap to open your letter
                 </p>
               </motion.div>
+            ) : !revealStarted ? (
+              <LuxuryLetterContent onNext={() => useStore.getState().setRevealStarted(true)} />
             ) : (
-              <LuxuryLetterContent onNext={() => setCurrentScene(3)} />
+              <ILoveYouReveal />
             )}
           </motion.div>
-        )}
-
-        {/* SCENE 3: Reveal */}
-        {currentScene === 3 && (
-          <RevealText key="scene3" onNext={() => setCurrentScene(4)} />
-        )}
-
-        {/* SCENE 4: I Love You */}
-        {currentScene === 4 && (
-          <ILoveYouReveal key="scene4" />
         )}
 
       </AnimatePresence>
@@ -246,7 +438,7 @@ function CountdownTimer() {
 
   useEffect(() => {
     const target = new Date();
-    target.setHours(24, 0, 0, 0);
+    target.setSeconds(target.getSeconds() + 5); // 5 seconds countdown for preview
 
     const interval = setInterval(() => {
       const now = new Date();
@@ -387,17 +579,17 @@ function RevealText({ onNext }) {
   );
 }
 
-/* ─── I Love You Reveal ────────────────────────────────── */
+/* ─── Final Message Reveal ────────────────────────────────── */
 function ILoveYouReveal() {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     const timers = [
       setTimeout(() => setStep(1), 600),
-      setTimeout(() => setStep(2), 4000),
+      setTimeout(() => setStep(2), 3500),
       setTimeout(() => setStep(3), 6000),
-      setTimeout(() => setStep(4), 8000),
-      setTimeout(() => setStep(5), 10500),
+      setTimeout(() => setStep(4), 8500),
+      setTimeout(() => setStep(5), 11000),
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -422,9 +614,9 @@ function ILoveYouReveal() {
             initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
             className="font-serif text-center text-white"
-            style={{ fontSize: 'clamp(3.5rem, 18vw, 9rem)', textShadow: '0 0 40px rgba(255,105,180,0.5)' }}
+            style={{ fontSize: 'clamp(2.5rem, 12vw, 6rem)', textShadow: '0 0 40px rgba(255,105,180,0.5)' }}
           >
-            I
+            I am so lucky...
           </motion.p>
         )}
 
@@ -433,9 +625,9 @@ function ILoveYouReveal() {
             initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
             className="font-serif text-center text-white"
-            style={{ fontSize: 'clamp(3rem, 15vw, 8rem)', textShadow: '0 0 40px rgba(255,105,180,0.5)' }}
+            style={{ fontSize: 'clamp(2rem, 10vw, 5rem)', textShadow: '0 0 40px rgba(255,105,180,0.5)' }}
           >
-            I Love
+            To have you in my life
           </motion.p>
         )}
 
@@ -444,9 +636,9 @@ function ILoveYouReveal() {
             initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
             className="font-serif text-center text-white"
-            style={{ fontSize: 'clamp(2.5rem, 12vw, 7rem)', textShadow: '0 0 40px rgba(255,105,180,0.5)' }}
+            style={{ fontSize: 'clamp(2rem, 8vw, 4rem)', textShadow: '0 0 40px rgba(255,105,180,0.5)' }}
           >
-            I Love You
+            You are so special ❤️
           </motion.p>
         )}
 
@@ -454,27 +646,27 @@ function ILoveYouReveal() {
           <motion.div key="s5"
             initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 2.5 }}
-            className="flex flex-col items-center gap-4 text-center"
+            className="flex flex-col items-center gap-6 text-center pointer-events-auto"
           >
             <p
               className="font-serif"
               style={{
-                fontSize: 'clamp(2.6rem, 13vw, 8rem)',
+                fontSize: 'clamp(2rem, 8vw, 4.5rem)',
                 color: '#ff9eb5',
                 textShadow: '0 0 60px rgba(255,105,180,0.9), 0 0 120px rgba(255,26,106,0.4)',
-                lineHeight: 1.2,
+                lineHeight: 1.3,
               }}
             >
-              I Love You
+              I am so lucky to have you in my life!
             </p>
-            <p style={{ fontSize: 'clamp(2rem, 8vw, 4rem)' }}>❤️</p>
             <motion.p
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1.5 }}
-              className="font-serif italic text-white/50 text-sm sm:text-base"
-              style={{ fontFamily: 'Playfair Display, serif' }}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 1.5 }}
+              className="font-serif italic text-white"
+              style={{ fontSize: 'clamp(1.2rem, 5vw, 2rem)', textShadow: '0 0 20px rgba(255,105,180,0.8)' }}
             >
-              — Always & Forever, Shankyyy 🌹
+              "Unaku enkita ethachum sollanum na... inikae sollu 😉"
             </motion.p>
+            <p style={{ fontSize: 'clamp(2rem, 8vw, 4rem)' }}>❤️</p>
           </motion.div>
         )}
 

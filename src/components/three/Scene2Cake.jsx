@@ -1,88 +1,86 @@
 import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html, Cylinder } from '@react-three/drei';
+import { Cylinder } from '@react-three/drei';
 import gsap from 'gsap';
+import { useStore } from '../../store/useStore';
 
-export default function Scene2Cake({ onNext }) {
+export default function Scene2Cake() {
   const cakeGroup = useRef();
   const candlesRef = useRef([]);
-  const [wished, setWished] = useState(false);
+  const candlesBlown = useStore(state => state.candlesBlown);
+  const setCandlesBlown = useStore(state => state.setCandlesBlown);
 
   useEffect(() => {
-    // Cake rises from bottom
-    gsap.fromTo(cakeGroup.current.position, 
-      { y: -10 }, 
-      { y: -1, duration: 3, ease: "back.out(1.2)" }
+    gsap.fromTo(cakeGroup.current.position,
+      { y: -10 },
+      { y: -1.5, duration: 2.5, ease: "back.out(1.2)" }
     );
   }, []);
 
-  useFrame((state) => {
-    if (cakeGroup.current && !wished) {
-      cakeGroup.current.rotation.y += 0.005;
+  useFrame(() => {
+    if (cakeGroup.current && !candlesBlown) {
+      cakeGroup.current.rotation.y += 0.004;
     }
   });
 
-  const handleBlowCandles = () => {
-    if (wished) return;
-    setWished(true);
-
-    // Turn off candles
-    candlesRef.current.forEach((candle, idx) => {
-      gsap.to(candle.material.emissive, { r: 0, g: 0, b: 0, duration: 0.5, delay: idx * 0.1 });
-    });
-
-    // Fade out cake and move to next scene
-    gsap.to(cakeGroup.current.position, { y: -10, duration: 2, delay: 1, ease: "power2.in" });
-    
-    setTimeout(() => {
-      onNext();
-    }, 3000);
-  };
+  // Called by OverlayUI button
+  useEffect(() => {
+    if (candlesBlown) {
+      candlesRef.current.forEach((candle, idx) => {
+        if (candle && candle.material) {
+          gsap.to(candle.material, { emissiveIntensity: 0, duration: 0.4, delay: idx * 0.15 });
+        }
+      });
+      gsap.to(cakeGroup.current.position, { y: -10, duration: 2, delay: 1, ease: "power2.in" });
+    }
+  }, [candlesBlown]);
 
   return (
     <group>
+      <ambientLight intensity={0.4} color="#fff0f5" />
+      <pointLight position={[0, 5, 5]} intensity={2} color="#ffb6c1" />
+      <pointLight position={[-3, 3, 3]} intensity={1} color="#ffd700" />
+
       <group ref={cakeGroup}>
-        {/* Tier 1 */}
-        <Cylinder args={[2, 2.2, 1, 32]} position={[0, 0, 0]}>
-          <meshStandardMaterial color="#fff0f5" roughness={0.2} metalness={0.1} />
+        {/* Base tier */}
+        <Cylinder args={[2.2, 2.4, 1.2, 32]} position={[0, 0, 0]}>
+          <meshStandardMaterial color="#fff0f5" roughness={0.3} metalness={0.05} />
         </Cylinder>
-        {/* Tier 2 */}
-        <Cylinder args={[1.4, 1.5, 1]} position={[0, 1, 0]}>
+        {/* Pink frosting drip ring */}
+        <Cylinder args={[2.25, 2.25, 0.15, 32]} position={[0, 0.6, 0]}>
           <meshStandardMaterial color="#ffb6c1" roughness={0.2} />
         </Cylinder>
-        
+
+        {/* Middle tier */}
+        <Cylinder args={[1.5, 1.6, 1.0, 32]} position={[0, 1.5, 0]}>
+          <meshStandardMaterial color="#ffc0cb" roughness={0.3} />
+        </Cylinder>
+
+        {/* Top tier */}
+        <Cylinder args={[0.9, 1.0, 0.8, 32]} position={[0, 2.4, 0]}>
+          <meshStandardMaterial color="#ffe4e1" roughness={0.3} />
+        </Cylinder>
+
         {/* Candles */}
-        {[-0.5, 0, 0.5].map((x, i) => (
-          <group key={i} position={[x, 1.8, 0]}>
-            <Cylinder args={[0.05, 0.05, 0.6]} position={[0, 0, 0]}>
-              <meshStandardMaterial color="#ffffff" />
+        {[-0.6, 0, 0.6].map((x, i) => (
+          <group key={i} position={[x, 3.1, 0]}>
+            <Cylinder args={[0.06, 0.06, 0.7, 16]}>
+              <meshStandardMaterial color={['#ff69b4', '#ff1493', '#db7093'][i]} />
             </Cylinder>
-            {/* Candle Flame */}
-            <mesh ref={el => candlesRef.current[i] = el} position={[0, 0.4, 0]}>
-              <sphereGeometry args={[0.1, 16, 16]} />
-              <meshStandardMaterial color="#ffa500" emissive="#ff4500" emissiveIntensity={3} />
+            {/* Flame */}
+            <mesh ref={el => candlesRef.current[i] = el} position={[0, 0.5, 0]}>
+              <sphereGeometry args={[0.12, 16, 16]} />
+              <meshStandardMaterial
+                color="#ffa500"
+                emissive="#ff6600"
+                emissiveIntensity={!candlesBlown ? 4 : 0}
+                transparent
+                opacity={!candlesBlown ? 1 : 0}
+              />
             </mesh>
           </group>
         ))}
       </group>
-
-      <Html center position={[0, 4, 0]}>
-        <div style={{ textAlign: 'center', opacity: wished ? 0 : 1, transition: 'opacity 0.5s' }}>
-          <h2 style={{ color: 'white', fontFamily: "'Great Vibes', cursive", fontSize: '4rem', textShadow: '0 0 20px #ff69b4' }}>
-            Make a wish...
-          </h2>
-          <button 
-            onClick={handleBlowCandles}
-            style={{
-              marginTop: '20px', padding: '10px 30px', borderRadius: '30px', 
-              background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.5)',
-              color: 'white', cursor: 'pointer', letterSpacing: '0.1em', backdropFilter: 'blur(5px)'
-            }}
-          >
-            TAP TO BLOW CANDLES
-          </button>
-        </div>
-      </Html>
     </group>
   );
 }

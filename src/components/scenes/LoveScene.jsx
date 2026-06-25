@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
+import { Plane } from '@react-three/drei';
 import ParticleSystem from '../effects/ParticleSystem';
 import * as THREE from 'three';
 
@@ -7,41 +8,54 @@ export default function LoveScene() {
   const { camera } = useThree();
 
   useEffect(() => {
-    camera.position.set(0, 0, 9);
-    camera.lookAt(0, 0, 0);
+    // Position camera inside the room
+    camera.position.set(0, 2, 8);
+    camera.lookAt(0, 2, 0);
   }, [camera]);
 
   useFrame((state) => {
-    // Gentle breathing camera drift
+    // Gentle breathing camera drift for cinematic effect
     const t = state.clock.elapsedTime;
-    camera.position.x = Math.sin(t * 0.08) * 0.4;
-    camera.position.y = Math.cos(t * 0.06) * 0.2;
-    camera.lookAt(0, 0, 0);
+    camera.position.x = Math.sin(t * 0.1) * 0.2;
+    camera.position.y = 2 + Math.cos(t * 0.08) * 0.1;
+    camera.lookAt(0, 2, 0);
   });
+
+  const wallColor = "#ffebcd"; // Blanched almond
+  const floorColor = "#8b4513"; // Saddle brown
+  const roomSize = 20;
 
   return (
     <group>
-      {/* Deep romantic dark-rose ambient */}
-      <ambientLight intensity={0.12} color="#1a0015" />
+      {/* Warm room ambient light */}
+      <ambientLight intensity={0.4} color="#ffe4b5" />
 
-      {/* Central pulsing heart glow */}
-      <pointLight position={[0, 0, 3]} intensity={4} color="#ff1a6a" distance={20} />
+      {/* Main warm light (fireplace or cozy lamp feel) */}
+      <pointLight position={[0, 4, -5]} intensity={3} color="#ffa07a" distance={30} />
+      
+      {/* Fill lights */}
+      <pointLight position={[-5, 5, 5]} intensity={1} color="#ffb6c1" distance={20} />
+      <pointLight position={[5, 5, 5]} intensity={1} color="#ffb6c1" distance={20} />
 
-      {/* Side fills */}
-      <pointLight position={[-4, 3, 2]} intensity={1.8} color="#ff69b4" distance={18} />
-      <pointLight position={[4, -2, 2]} intensity={1.5} color="#c71585" distance={18} />
+      {/* Room Walls (Box with BackSide) */}
+      <mesh position={[0, roomSize/2 - 1, 0]}>
+        <boxGeometry args={[roomSize, roomSize, roomSize]} />
+        <meshStandardMaterial color={wallColor} side={THREE.BackSide} roughness={0.9} />
+      </mesh>
 
-      {/* Backlight bloom */}
-      <pointLight position={[0, 0, -5]} intensity={1.2} color="#8b0033" distance={20} />
+      {/* Floor */}
+      <Plane args={[roomSize, roomSize]} position={[0, -0.9, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial color={floorColor} roughness={0.8} />
+      </Plane>
+      
+      {/* A warm glowing rug on the floor */}
+      <Plane args={[8, 8]} position={[0, -0.89, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial color="#c71585" roughness={0.9} />
+      </Plane>
 
-      {/* Stars — soft pinkish white */}
-      <ParticleSystem count={900} type="stars" color="#ffd6e8" radius={14} speed={0.3} size={0.025} />
-
-      {/* Floating pink heart particles */}
-      <ParticleSystem count={350} type="hearts" color="#ff4d88" radius={10} speed={0.9} size={0.07} />
-
-      {/* Deeper magenta hearts */}
-      <ParticleSystem count={150} type="hearts" color="#ff1a6a" radius={7} speed={1.4} size={0.05} />
+      {/* Floating magical warm hearts in the room to keep the romantic vibe */}
+      <ParticleSystem count={150} type="hearts" color="#ff69b4" radius={8} speed={0.5} size={0.06} />
+      <ParticleSystem count={50} type="stars" color="#ffd700" radius={8} speed={0.3} size={0.03} />
     </group>
   );
 }

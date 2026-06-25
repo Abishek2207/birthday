@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export const useStore = create((set) => ({
-  currentScene: 1, // 1 to 7
+  currentScene: 1, // 1: Romantic Night (Lock), 2: Letter Scene, 3: Final Reveal
   audioPlayed: false,
   isMuted: false,
   isCountdownFinished: false,
@@ -11,15 +11,9 @@ export const useStore = create((set) => ({
   setCountdownFinished: (finished) => set({ isCountdownFinished: finished }),
   
   // Progress/Interaction tracking
-  introFinished: false,
-  setIntroFinished: (finished) => set({ introFinished: finished }),
+  letterOpened: false,
+  setLetterOpened: (opened) => set({ letterOpened: opened }),
   
-  cakeClicked: false,
-  setCakeClicked: (clicked) => set({ cakeClicked: clicked }),
-  
-  letterFinished: false,
-  setLetterFinished: (finished) => set({ letterFinished: finished }),
-
-  heartClicked: false,
-  setHeartClicked: (clicked) => set({ heartClicked: clicked }),
+  revealStarted: false,
+  setRevealStarted: (started) => set({ revealStarted: started }),
 }));

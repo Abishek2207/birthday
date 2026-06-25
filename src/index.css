@@ -7,16 +7,16 @@
 }
 
 :root {
-  --color-soft-pink: #FFB6C1;
-  --color-lavender: #E6E6FA;
-  --color-purple: #9370DB;
-  --color-rose-gold: #B76E79;
-  --color-moonlight-white: #F4F6F0;
+  --color-deep-navy: #0B1021;
+  --color-gold: #D4AF37;
+  --color-moonlight: #F4F6F0;
+  --color-rose: #800020; /* Deep Burgundy/Red for petals/seal */
+  --color-gold-foil: #CFB53B;
 }
 
 @layer utilities {
-  .glassmorphism {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)];
+  .luxury-glass {
+    @apply bg-black/40 backdrop-blur-lg border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
   }
 }
 
@@ -24,9 +24,9 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #050510;
-  color: var(--color-moonlight-white);
-  font-family: "Inter", sans-serif;
+  background-color: var(--color-deep-navy);
+  color: var(--color-moonlight);
+  font-family: "Playfair Display", serif;
 }
 
 /* Custom UI Layers */
